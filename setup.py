@@ -19,7 +19,7 @@ setup(
     url='https://github.com/albertdefusco/intake_sklearn',
     packages=['intake_sklearn'],
     entry_points={
-        'intake.drivers': ['sklearn = intake_sklearn.sklearn:SklearnModelSource']
+        'intake.drivers': ['sklearn = intake_sklearn.source:SklearnModelSource']
     },
     install_requires=requirements,
     classifiers=[

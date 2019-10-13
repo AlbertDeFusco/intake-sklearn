@@ -10,7 +10,7 @@ class SklearnModelSource(DataSource):
     version = __version__
     partition_access = False
 
-    def __init__(self, urlpath, metadata=None):
+    def __init__(self, urlpath, storage_options=None, metadata=None):
         """
         Parameters
         ----------
@@ -22,7 +22,8 @@ class SklearnModelSource(DataSource):
           - ``s3://some-bucket/models/model.pkl``
         """
 
-        self.urlpath = urlpath
+        self._urlpath = urlpath
+        self._storage_options = storage_options or {}
 
         super().__init__(metadata=metadata)
 
@@ -30,6 +31,6 @@ class SklearnModelSource(DataSource):
     def read(self):
         self._load_metadata()
 
-        with fsspec.open(self.urlpath): as f:
+        with fsspec.open(self._urlpath, storage_options=self._storage_options): as f:
             return joblib.load(f)
 

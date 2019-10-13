@@ -1,0 +1,7 @@
+[report]
+omit =
+    setup.py
+    intake_sklearn/__main__.py
+    intake_sklearn/_version.py
+    versioneer.py
+    tests/*

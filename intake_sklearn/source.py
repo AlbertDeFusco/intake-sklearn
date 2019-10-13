@@ -1,6 +1,7 @@
-from intake.source.base import DataSource
+from intake.source.base import DataSource, Schema
 import joblib
 import fsspec
+import sklearn
 
 from . import __version__
 
@@ -28,9 +29,16 @@ class SklearnModelSource(DataSource):
         super().__init__(metadata=metadata)
 
 
+    def _get_schema(self):
+        self._schema = Schema(sklearn_version=sklearn.__version__,
+                              npartitions=1,
+                              extra_metadata={})
+        return self._schema
+
+
     def read(self):
         self._load_metadata()
 
-        with fsspec.open(self._urlpath, storage_options=self._storage_options): as f:
+        with fsspec.open(self._urlpath, **self._storage_options) as f:
             return joblib.load(f)
 

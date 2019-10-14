@@ -1,0 +1,14 @@
+sources:
+  local_model:
+    description: local bikeshare model
+    driver: sklearn
+    args: 
+      urlpath: '{{ CATALOG_DIR }}/optimized_model.pkl'
+
+  s3_model:
+    description: s3 bikeshare model
+    driver: sklearn
+    args: 
+      urlpath: 's3://anaconda-training/models/optimized_model.pkl'
+      storage_options:
+        anon: True

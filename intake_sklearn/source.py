@@ -2,6 +2,8 @@ from intake.source.base import DataSource, Schema
 import joblib
 import fsspec
 import sklearn
+import re
+import warnings
 
 from . import __version__
 
@@ -28,16 +30,37 @@ class SklearnModelSource(DataSource):
 
         super().__init__(metadata=metadata)
 
+    def _load(self):
+        with fsspec.open(self._urlpath, mode='rb', **self._storage_options) as f:
+            return f.read()
 
     def _get_schema(self):
-        self._schema = Schema(sklearn_version=sklearn.__version__,
-                              npartitions=1,
-                              extra_metadata={})
+        as_binary = self._load()
+        if b'_sklearn_version' in as_binary:
+            s = re.search(b'_sklearn_versionq(.*\x00)((\d+\.)?(\d+\.)?(\*|\d+))q', as_binary)
+            sklearn_version = s.group(2).decode()
+        else:
+            sklearn_version = None
+
+        self._schema = Schema(
+            npartitions=1,
+            extra_metadata={
+                'sklearn_version':sklearn_version
+            }
+        )
         return self._schema
 
 
     def read(self):
         self._load_metadata()
+
+        if not self.metadata['sklearn_version'] == sklearn.__version__:
+            msg = ('The model was created with Scikit-Learn version {}'
+                   'but version {} has been installed in your current environment.'
+                   'The model may not load or work correctly.').format(self.metadata['sklearn_version'],
+                                          sklearn.__version__)
+            warnings.warn(msg, RuntimeWarning, stacklevel=2)
+
 
         with fsspec.open(self._urlpath, **self._storage_options) as f:
             return joblib.load(f)

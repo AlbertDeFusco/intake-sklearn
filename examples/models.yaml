@@ -1,3 +1,6 @@
+metadata:
+  sklearn_version: 0.21.3
+
 sources:
   local_model:
     description: local bikeshare model

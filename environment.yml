@@ -1,0 +1,8 @@
+name: intake-sklearn
+dependencies:
+  - python=3.7
+  - intake
+  - s3fs
+  - fsspec
+  - scikit-learn
+  - joblib

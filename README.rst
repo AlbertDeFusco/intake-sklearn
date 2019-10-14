@@ -9,5 +9,5 @@ intake_sklearn
    :target: https://codecov.io/gh/albertdefusco/intake_sklearn
 
 
-Driver for Scikit-Learn model pickle files
+Intake plugin to load Scikit-Learn model pickle files
 

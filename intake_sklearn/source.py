@@ -3,7 +3,6 @@ import joblib
 import fsspec
 import sklearn
 import re
-import warnings
 
 from . import __version__
 
@@ -21,7 +20,7 @@ class SklearnModelSource(DataSource):
         urlpath: str, location of model pkl file
         Either the absolute or relative path to the file or URL to be
         opened. Some examples:
-          - ``{{ CATALOG_DIR }}models/model.pkl``
+          - ``{{ CATALOG_DIR }}/models/model.pkl``
           - ``s3://some-bucket/models/model.pkl``
         """
 
@@ -30,14 +29,16 @@ class SklearnModelSource(DataSource):
 
         super().__init__(metadata=metadata)
 
+
     def _load(self):
         with fsspec.open(self._urlpath, mode='rb', **self._storage_options) as f:
             return f.read()
 
+
     def _get_schema(self):
         as_binary = self._load()
-        if b'_sklearn_version' in as_binary:
-            s = re.search(b'_sklearn_versionq(.*\x00)((\d+\.)?(\d+\.)?(\*|\d+))q', as_binary)
+        s = re.search(b'_sklearn_versionq(.*\x00)((\d+\.)?(\d+\.)?(\*|\d+))q', as_binary)
+        if s:
             sklearn_version = s.group(2).decode()
         else:
             sklearn_version = None
@@ -55,11 +56,10 @@ class SklearnModelSource(DataSource):
         self._load_metadata()
 
         if not self.metadata['sklearn_version'] == sklearn.__version__:
-            msg = ('The model was created with Scikit-Learn version {}'
+            msg = ('The model was created with Scikit-Learn version {} '
                    'but version {} has been installed in your current environment.'
-                   'The model may not load or work correctly.').format(self.metadata['sklearn_version'],
-                                          sklearn.__version__)
-            warnings.warn(msg, RuntimeWarning, stacklevel=2)
+                  ).format(self.metadata['sklearn_version'], sklearn.__version__)
+            raise RuntimeError(msg)
 
 
         with fsspec.open(self._urlpath, **self._storage_options) as f:
